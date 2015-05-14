@@ -33,9 +33,13 @@ class JsonExtractorMixin(object):
             encoding = handler.info().get('Content-Encoding')
             if encoding and 'gzip' in encoding:
                 buf = StringIO(handler.read())
-                handler = gzip.GzipFile(fileobj=buf)
+                with gzip.GzipFile(fileobj=buf) as gz_handler:
+                    extracted_obj = json.loads(gz_handler.read())
+                buf.close()
 
-            return json.loads(handler.read())
+            else:
+                extracted_obj = json.loads(handler.read())
+            return extracted_obj
         except Exception:
             logger.error('Error fetching {0}'.format(url), exc_info=True)
             return None
