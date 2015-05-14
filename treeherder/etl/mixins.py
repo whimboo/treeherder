@@ -39,6 +39,8 @@ class JsonExtractorMixin(object):
 
             else:
                 extracted_obj = json.loads(handler.read())
+
+            handler.close()
             return extracted_obj
         except Exception:
             logger.error('Error fetching {0}'.format(url), exc_info=True)
