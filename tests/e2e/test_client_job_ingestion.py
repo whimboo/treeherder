@@ -56,7 +56,7 @@ def check_artifacts(test_project,
         job_log_list = jobs_model.get_job_log_url_list([job_id])
 
         print job_log_list
-        assert len(job_log_list) == 1
+        assert len(job_log_list) >= 1
         assert job_log_list[0]['parse_status'] == parse_status
 
     with ArtifactsModel(test_project) as artifacts_model:
@@ -276,3 +276,199 @@ def test_post_job_with_text_log_summary_and_bug_suggestions_artifact(
 
     assert mock_parse.called is False
     assert mock_get_error_summary.called is False
+
+
+def test_post_job_from_bc (
+        test_project,
+        monkeypatch,
+        result_set_stored,
+        mock_post_collection,
+        mock_error_summary,
+        text_log_summary_blob,
+        ):
+    """
+    test submitting a job with a pre-parsed log gets parse_status of
+    "parsed" and doesn't parse the log, but still generates
+    the bug suggestions.
+    """
+
+    mock_parse = MagicMock(name="parse_line")
+    monkeypatch.setattr(StepParser, 'parse_line', mock_parse)
+
+    job_guid = 'd22c74d4aa6d2a1dcba96d95dccbd5fdca70cf33'
+    tjc = client.TreeherderJobCollection()
+    tj = client.TreeherderJob({
+        'project': test_project,
+        'revision_hash': result_set_stored[0]['revision_hash'],
+
+        "coalesced": [],
+        "job": {
+            "artifacts": [
+                {
+                    "blob": json.dumps({
+                        "header": {
+                            "revision": "2cca4c7417b387dd7cfd0cf5672657e0d1748ef0",
+                            "slave": "nexus-one-1"
+                        },
+                        "logurl": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1.log",
+                        "step_data": {
+                            # "all_errors": [
+                            #     "TEST_UNEXPECTED_FAIL | /sdcard/tests/autophone/s1s2test/nytimes.com/index.html | Failed to get uncached measurement.",
+                            #     "PROCESS-CRASH | autophone-s1s2 | application crashed [@ libc.so + 0xd01c]"
+                            # ],
+                            "errors_truncated": False,
+                            # "steps": [
+                            #     {
+                            #         "duration": 514,
+                            #         "error_count": 2,
+                            #         "errors": [
+                            #             "TEST_UNEXPECTED_FAIL | /sdcard/tests/autophone/s1s2test/nytimes.com/index.html | Failed to get uncached measurement.",
+                            #             "PROCESS-CRASH | autophone-s1s2 | application crashed [@ libc.so + 0xd01c]"
+                            #         ],
+                            #         "finished": "2015-05-27 14:22:50",
+                            #         "finished_linenumber": 1,
+                            #         "name": "step",
+                            #         "order": 0,
+                            #         "result": "testfailed",
+                            #         "started_linenumber": 1
+                            #     }
+                            # ]
+                            "all_errors": [
+                                {"line": "12:34:13     INFO -  Assertion failure: addr % CellSize == 0, at ../../../js/src/gc/Heap.h:1041", "linenumber": 61918},
+                                {"line": "12:34:24  WARNING -  TEST-UNEXPECTED-FAIL | file:///builds/slave/talos-slave/test/build/tests/jsreftest/tests/jsreftest.html?test=ecma_5/JSON/parse-array-gc.js | Exited with code 1 during test run", "linenumber": 61919}, {"line": "12:34:37  WARNING -  PROCESS-CRASH | file:///builds/slave/talos-slave/test/build/tests/jsreftest/tests/jsreftest.html?test=ecma_5/JSON/parse-array-gc.js | application crashed [@ js::gc::Cell::tenuredZone() const]", "linenumber": 61922},
+                                {"line": "12:34:38    ERROR - Return code: 256", "linenumber": 64435}
+                            ],
+                            "steps": [
+                                {"name": "Clone gecko tc-vcs "},
+                                {"name": "Build ./build-b2g-desktop.sh /home/worker/workspace"}
+                            ],
+                        }
+                    }),
+                    "name": "text_log_summary",
+                    "type": "json",
+                    "job_guid": job_guid
+                },
+                {
+                    "blob": {
+                        "job_details": [
+                            {
+                                "content_type": "text",
+                                "title": "Config",
+                                "value": "s1s2-nytimes-local.ini"
+                            },
+                            {
+                                "content_type": "link",
+                                "title": "Build",
+                                "url": "http://ftp.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/fennec-41.0a1.en-US.android-arm.apk",
+                                "value": "fennec-41.0a1.en-US.android-arm.apk"
+                            },
+                            {
+                                "content_type": "raw_html",
+                                "title": "Autophone Throbber-t",
+                                "value": "12/<em class=\"testfail\">2</em>/0"
+                            },
+                            {
+                                "content_type": "link",
+                                "title": "phonedash",
+                                "url": "http://192.168.1.50:18000/#/org.mozilla.fennec/throbberstart/local-blank/norejected/2015-05-26/2015-05-26/notcached/noerrorbars/standarderror/notry",
+                                "value": "graph"
+                            },
+                            {
+                                "content_type": "link",
+                                "title": "artifact uploaded",
+                                "url": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1-logcat.log",
+                                "value": "logcat"
+                            },
+                            {
+                                "content_type": "link",
+                                "title": "artifact uploaded",
+                                "url": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1-60fbf175-e0d3-a181-5777a1bd-3fd4b681.extra",
+                                "value": "60fbf175-e0d3-a181-5777a1bd-3fd4b681.extra"
+                            },
+                            {
+                                "content_type": "link",
+                                "title": "artifact uploaded",
+                                "url": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1-60fbf175-e0d3-a181-5777a1bd-3fd4b681.dmp",
+                                "value": "60fbf175-e0d3-a181-5777a1bd-3fd4b681.dmp"
+                            },
+                            {
+                                "content_type": "link",
+                                "title": "artifact uploaded",
+                                "url": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1.log",
+                                "value": "Autophone Log"
+                            }
+                        ]
+                    },
+                    "name": "Job Info",
+                    "type": "json"
+                },
+                {
+                    "blob": {
+                        "buildername": "android-2-3-armv7-api9 mozilla-inbound opt autophone-s1s2"
+                    },
+                    "name": "buildapi",
+                    "type": "json"
+                },
+                {
+                    "blob": {
+                        "build_url": "http://ftp.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/fennec-41.0a1.en-US.android-arm.apk",
+                        "chunk": 1,
+                        "config_file": "/mozilla/projects/autophone/src/bclary-autophone/configs/s1s2-nytimes-local.ini"
+                    },
+                    "name": "privatebuild",
+                    "type": "json"
+                }
+            ],
+            "build_platform": {
+                "architecture": "armv7",
+                "os_name": "android",
+                "platform": "android-2-3-armv7-api9"
+            },
+            "build_url": "http://ftp.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/fennec-41.0a1.en-US.android-arm.apk",
+            "desc": "",
+            "end_timestamp": 1432761770,
+            "group_name": "Autophone",
+            "group_symbol": "A",
+            "job_guid": job_guid,
+            "job_symbol": "t",
+            "log_references": [
+                {
+                    "name": "logcat",
+                    "parse_status": "parsed",
+                    "url": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1-logcat.log"
+                },
+                {
+                    "name": "autophone-nexus-one-1.log",
+                    "parse_status": "parsed",
+                    "url": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1.log"
+                }
+            ],
+            "machine": "nexus-one-1",
+            "machine_platform": {
+                "architecture": "armv7",
+                "os_name": "android",
+                "platform": "android-2-3-armv7-api9"
+            },
+            "name": "Autophone Throbber",
+            "option_collection": {
+                "opt": True
+            },
+            "product_name": "fennec",
+            "reason": "",
+            "result": "testfailed",
+            "start_timestamp": 1432761256,
+            "state": "completed",
+            "submit_timestamp": 1432761256,
+            "who": ""
+        },
+    })
+    tjc.add(tj)
+
+    do_post_collection(test_project, tjc)
+
+    check_artifacts(test_project, job_guid, 'parsed', 2,
+                    {'Bug suggestions', 'text_log_summary'}, mock_error_summary)
+
+    # ensure the parsing didn't happen
+    assert mock_parse.called is False
+
