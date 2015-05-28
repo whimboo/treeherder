@@ -310,8 +310,8 @@ BUILDAPI_BUILDS4H_URL = "https://secure.pub.build.mozilla.org/builddata/buildjso
 # data job ingestion.
 # If TreeherderCollections are larger, they will be chunked
 # to this size.
-BUILDAPI_PENDING_CHUNK_SIZE = 500
-BUILDAPI_RUNNING_CHUNK_SIZE = 500
+BUILDAPI_PENDING_CHUNK_SIZE = 1000
+BUILDAPI_RUNNING_CHUNK_SIZE = 1000
 BUILDAPI_BUILDS4H_CHUNK_SIZE = 500
 
 PARSER_MAX_STEP_ERROR_LINES = 100
