@@ -278,7 +278,7 @@ def test_post_job_with_text_log_summary_and_bug_suggestions_artifact(
     assert mock_get_error_summary.called is False
 
 
-def test_post_job_artifacts_by_add_artifact (
+def test_post_job_artifacts_by_add_artifact(
         test_project,
         monkeypatch,
         result_set_stored,
@@ -355,10 +355,10 @@ def test_post_job_artifacts_by_add_artifact (
         },
         "logurl": "https://autophone-dev.s3.amazonaws.com/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/autophone-autophone-s1s2-s1s2-nytimes-local.ini-1-nexus-one-1.log",
         "step_data": {
-             "all_errors": [
-                 {"line": "TEST_UNEXPECTED_FAIL | /sdcard/tests/autophone/s1s2test/nytimes.com/index.html | Failed to get uncached measurement.", "linenumber": 64435},
-                 {"line": "PROCESS-CRASH | autophone-s1s2 | application crashed [@ libc.so + 0xd01c]", "linenumber": 64435}
-             ],
+            "all_errors": [
+                {"line": "TEST_UNEXPECTED_FAIL | /sdcard/tests/autophone/s1s2test/nytimes.com/index.html | Failed to get uncached measurement.", "linenumber": 64435},
+                {"line": "PROCESS-CRASH | autophone-s1s2 | application crashed [@ libc.so + 0xd01c]", "linenumber": 64435}
+            ],
             "errors_truncated": False,
             "steps": [
                 {
@@ -434,7 +434,6 @@ def test_post_job_artifacts_by_add_artifact (
         "buildername": "android-2-3-armv7-api9 mozilla-inbound opt autophone-s1s2"
     })
 
-
     pb_blob = json.dumps({
         "build_url": "http://ftp.mozilla.org/pub/mozilla.org/mobile/tinderbox-builds/mozilla-inbound-android-api-9/1432676531/en-US/fennec-41.0a1.en-US.android-arm.apk",
         "chunk": 1,
@@ -455,4 +454,3 @@ def test_post_job_artifacts_by_add_artifact (
 
     # ensure the parsing didn't happen
     assert mock_parse.called is False
-
